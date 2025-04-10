@@ -4,71 +4,230 @@
     <meta charset="UTF-8">
     <title>Clasificador de Clientes</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #2d3436;
+            --secondary-color: #636e72;
+            --accent-color: #00b894;
+            --text-color: #dfe6e9;
+            --error-color: #d63031;
+            --success-color: #00b894;
+        }
+
         body {
-            background-color: #121212;
-            color: #ffffff;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+
+        .card {
+            background-color: #34495e;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
         .form-control {
-            background-color: #1e1e1e;
-            color: #ffffff;
-            border: 1px solid #444;
+            background-color: #2c3e50;
+            color: var(--text-color);
+            border: 2px solid #465881;
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.3s ease;
         }
-        .form-control::placeholder {
-            color: #aaa;
+
+        .form-control:focus {
+            background-color: #2c3e50;
+            color: var(--text-color);
+            border-color: var(--accent-color);
+            box-shadow: none;
         }
+
         .form-label {
-            font-weight: bold;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
         }
+
         .info-text {
-            font-size: 0.9rem;
-            color: #bbbbbb;
+            font-size: 0.95rem;
+            color: var(--text-color);
+            line-height: 1.6;
         }
+
         .btn-custom {
-            background-color: #007bff;
-            border-color: #007bff;
+            background-color: var(--accent-color);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
+
+        .btn-custom:hover {
+            background-color: #00a884;
+            transform: translateY(-2px);
+        }
+
         .alert-info {
-            background-color: #1a1a2e;
-            border-color: #2e2e4e;
-            color: #00d4ff;
+            background-color: rgba(0, 184, 148, 0.1);
+            border: 2px solid var(--accent-color);
+            color: var(--text-color);
+            border-radius: 8px;
+        }
+
+        .alert-danger {
+            background-color: rgba(214, 48, 49, 0.1);
+            border: 2px solid var(--error-color);
+            color: var(--error-color);
+            border-radius: 8px;
+        }
+
+        .field-description {
+            font-size: 0.85rem;
+            color: #b2bec3;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        .result-card {
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .tooltip-icon {
+            color: var(--accent-color);
+            margin-left: 0.5rem;
+            cursor: help;
+        }
+
+        .cluster-description {
+            background-color: #2c3e50;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .cluster-icon {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
         }
     </style>
 </head>
 <body>
     <div class="container mt-5">
-        <h2 class="mb-4 text-center">💳 Clasificador de Clientes</h2>
-        <form method="POST">
-            {% for field, label in {
-                'BALANCE': 'Saldo actual',
-                'PURCHASES': 'Monto total de compras',
-                'CASH_ADVANCE': 'Anticipos en efectivo',
-                'CREDIT_LIMIT': 'Límite de crédito',
-                'PAYMENTS': 'Pagos realizados',
-                'MINIMUM_PAYMENTS': 'Pago mínimo',
-                'PAYMENT_RATIO': 'Ratio de pago'
-            }.items() %}
-                <div class="form-group">
-                    <label class="form-label">{{ label }} ({{ field }})</label>
-                    <input type="number" step="any" class="form-control" name="{{ field }}" value="{{ form_data[field] }}" required>
+        <div class="card">
+            <h2 class="text-center mb-4">💳 Clasificador de Clientes</h2>
+            
+            <form method="POST" id="predictionForm" novalidate>
+                {% for field, info in {
+                    'BALANCE': ['Saldo actual', 'Saldo actual en la tarjeta de crédito. Representa el monto pendiente de pago.'],
+                    'PURCHASES': ['Monto total de compras', 'Total de compras realizadas con la tarjeta. Incluye tanto compras únicas como en cuotas.'],
+                    'CASH_ADVANCE': ['Anticipos en efectivo', 'Monto total retirado como adelanto en efectivo de la tarjeta.'],
+                    'CREDIT_LIMIT': ['Límite de crédito', 'Límite máximo de crédito aprobado para la tarjeta.'],
+                    'PAYMENTS': ['Pagos realizados', 'Total de pagos efectuados a la tarjeta en el período.'],
+                    'MINIMUM_PAYMENTS': ['Pago mínimo', 'Monto mínimo requerido para mantener la tarjeta al día.'],
+                    'PAYMENT_RATIO': ['Ratio de pago', 'Relación entre el pago mínimo y el límite de crédito. Indica la capacidad de pago.']
+                }.items() %}
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ info[0] }}
+                            <i class="fas fa-info-circle tooltip-icon" title="{{ info[1] }}"></i>
+                        </label>
+                        <input type="number" 
+                               step="any" 
+                               class="form-control" 
+                               name="{{ field }}" 
+                               value="{{ form_data[field] }}" 
+                               required 
+                               min="0"
+                               placeholder="Ingrese el valor para {{ info[0] }}"
+                               oninput="this.value = this.value.replace(/[^0-9.-]/g, '');">
+                        <span class="field-description">{{ info[1] }}</span>
+                        <div class="invalid-feedback">
+                            Por favor ingrese un valor numérico válido mayor o igual a 0
+                        </div>
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-custom btn-block">
+                    <i class="fas fa-search"></i> Analizar Cliente
+                </button>
+            </form>
+
+            {% if error %}
+                <div class="alert alert-danger mt-4">
+                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
                 </div>
-            {% endfor %}
-            <button type="submit" class="btn btn-custom btn-block">Predecir tipo de cliente</button>
-        </form>
+            {% endif %}
 
-        {% if prediction %}
-            <div class="alert alert-info mt-4 text-center">
-                🔎 Clasificación: <strong>{{ prediction }}</strong>
+            {% if prediction %}
+                <div class="result-card mt-4">
+                    <h4 class="text-center mb-3">Resultado del Análisis</h4>
+                    <div class="alert alert-info">
+                        <i class="fas fa-chart-pie"></i> Clasificación: 
+                        <strong>{{ prediction }}</strong>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="cluster-description mt-4">
+                <h5 class="mb-3"><i class="fas fa-info-circle"></i> Tipos de Clientes</h5>
+                <div class="info-text">
+                    <p><span class="cluster-icon">💼</span> <strong>Cliente conservador</strong><br>
+                    Utiliza la tarjeta de manera prudente, mantiene saldos bajos y cumple puntualmente con sus pagos.</p>
+                    
+                    <p><span class="cluster-icon">🔄</span> <strong>Cliente activo con riesgo</strong><br>
+                    Alto uso de la tarjeta, frecuentes pagos mínimos y posible uso de adelantos en efectivo.</p>
+                    
+                    <p><span class="cluster-icon">💳</span> <strong>Cliente premium o solvente</strong><br>
+                    Altos montos de compras, límite de crédito elevado y excelente historial de pagos.</p>
+                </div>
             </div>
-        {% endif %}
-
-        <hr>
-        <p class="info-text mt-4">
-            <strong>¿Qué significa el resultado?</strong><br>
-            - 💼 <strong>Cliente conservador</strong>: usa poco su crédito, paga a tiempo.<br>
-            - 🔄 <strong>Cliente activo con riesgo</strong>: actividad frecuente, pagos mínimos o uso de anticipos.<br>
-            - 💳 <strong>Cliente premium o solvente</strong>: alto gasto, límite elevado y buen historial de pagos.
-        </p>
+        </div>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+    // Initialize tooltips
+    $(function () {
+        $('[title]').tooltip();
+    });
+
+    document.getElementById('predictionForm').addEventListener('submit', function(e) {
+        const inputs = this.querySelectorAll('input[type="number"]');
+        let hasError = false;
+        
+        inputs.forEach(input => {
+            const value = input.value.trim();
+            if (value === '' || isNaN(value) || parseFloat(value) < 0) {
+                hasError = true;
+                input.classList.add('is-invalid');
+            } else {
+                input.classList.remove('is-invalid');
+            }
+        });
+        
+        if (hasError) {
+            e.preventDefault();
+            alert('Por favor, complete todos los campos con valores numéricos válidos mayores o iguales a 0.');
+        }
+    });
+
+    // Clean validation on input
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.value.trim() !== '' && !isNaN(this.value) && parseFloat(this.value) >= 0) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+    </script>
 </body>
 </html>

@@ -1,0 +1,67 @@
+==========================================
+EJEMPLOS DE DATOS PARA PRUEBAS
+==========================================
+
+💼 CLIENTE CONSERVADOR
+------------------------------------------
+BALANCE: 500.00
+PURCHASES: 300.00
+CASH_ADVANCE: 0.00
+CREDIT_LIMIT: 2000.00
+PAYMENTS: 290.00
+MINIMUM_PAYMENTS: 50.00
+PAYMENT_RATIO: 0.025
+Características:
+- Bajo saldo pendiente
+- Compras moderadas
+- No usa adelantos en efectivo
+- Paga más del mínimo requerido
+- Ratio de pago bajo (buena señal)
+
+🔄 CLIENTE ACTIVO CON RIESGO
+------------------------------------------
+BALANCE: 3500.00
+PURCHASES: 2800.00
+CASH_ADVANCE: 1200.00
+CREDIT_LIMIT: 4000.00
+PAYMENTS: 400.00
+MINIMUM_PAYMENTS: 380.00
+PAYMENT_RATIO: 0.095
+Características:
+- Alto saldo pendiente
+- Muchas compras
+- Usa adelantos en efectivo
+- Paga cerca del mínimo
+- Ratio de pago moderado-alto (señal de riesgo)
+
+💳 CLIENTE PREMIUM/SOLVENTE
+------------------------------------------
+BALANCE: 4200.00
+PURCHASES: 8500.00
+CASH_ADVANCE: 0.00
+CREDIT_LIMIT: 15000.00
+PAYMENTS: 8300.00
+MINIMUM_PAYMENTS: 420.00
+PAYMENT_RATIO: 0.028
+Características:
+- Balance moderado
+- Alto volumen de compras
+- No necesita adelantos
+- Pagos sustanciales
+- Ratio de pago bajo (buena capacidad de pago)
+
+==========================================
+NOTAS IMPORTANTES:
+------------------------------------------
+1. Todos los valores monetarios están en la misma moneda
+2. PAYMENT_RATIO = MINIMUM_PAYMENTS / CREDIT_LIMIT
+3. Los valores son ejemplos representativos
+4. Puede haber variaciones dentro de cada categoría
+5. El modelo considera todas las variables en conjunto
+
+RECOMENDACIONES DE USO:
+------------------------------------------
+1. Pruebe cada conjunto de datos exactamente como está
+2. Modifique un valor a la vez para ver cambios
+3. Observe cómo pequeños cambios pueden afectar la clasificación
+4. Use estos datos como punto de partida para sus propias pruebas 
