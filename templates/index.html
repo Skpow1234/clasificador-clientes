@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Clasificador de Clientes</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        .form-control {
+            background-color: #1e1e1e;
+            color: #ffffff;
+            border: 1px solid #444;
+        }
+        .form-control::placeholder {
+            color: #aaa;
+        }
+        .form-label {
+            font-weight: bold;
+        }
+        .info-text {
+            font-size: 0.9rem;
+            color: #bbbbbb;
+        }
+        .btn-custom {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .alert-info {
+            background-color: #1a1a2e;
+            border-color: #2e2e4e;
+            color: #00d4ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4 text-center">💳 Clasificador de Clientes</h2>
+        <form method="POST">
+            {% for field, label in {
+                'BALANCE': 'Saldo actual',
+                'PURCHASES': 'Monto total de compras',
+                'CASH_ADVANCE': 'Anticipos en efectivo',
+                'CREDIT_LIMIT': 'Límite de crédito',
+                'PAYMENTS': 'Pagos realizados',
+                'MINIMUM_PAYMENTS': 'Pago mínimo',
+                'PAYMENT_RATIO': 'Ratio de pago'
+            }.items() %}
+                <div class="form-group">
+                    <label class="form-label">{{ label }} ({{ field }})</label>
+                    <input type="number" step="any" class="form-control" name="{{ field }}" value="{{ form_data[field] }}" required>
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-custom btn-block">Predecir tipo de cliente</button>
+        </form>
+
+        {% if prediction %}
+            <div class="alert alert-info mt-4 text-center">
+                🔎 Clasificación: <strong>{{ prediction }}</strong>
+            </div>
+        {% endif %}
+
+        <hr>
+        <p class="info-text mt-4">
+            <strong>¿Qué significa el resultado?</strong><br>
+            - 💼 <strong>Cliente conservador</strong>: usa poco su crédito, paga a tiempo.<br>
+            - 🔄 <strong>Cliente activo con riesgo</strong>: actividad frecuente, pagos mínimos o uso de anticipos.<br>
+            - 💳 <strong>Cliente premium o solvente</strong>: alto gasto, límite elevado y buen historial de pagos.
+        </p>
+    </div>
+</body>
+</html>
